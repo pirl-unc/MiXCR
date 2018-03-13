@@ -1,14 +1,15 @@
-# mixcr_2.1.9:1
-#   upgrades mixcr from 2.1.7 to 2.1.9
-#   updates the imgt library to imgt.201802-5.sv2.json.gz
-#   drops the seqware user
-#   upgrades fastqc from 0.11.5 to 0.11.7 
+# mixcr_2.1.9:2
+#   gets the aligned reads using exportReads
+#   installs vdjtools
 
 FROM phusion/baseimage:0.9.19
 
 ARG mixcr_version=2.1.9
 ARG imgt_version=201802-5.sv2
 ARG fastqc_version=0.11.7
+ARG vdjtools_version=1.1.7
+ARG seqkit_version=0.7.2
+ARG pigz_version=2.4
 
 USER root
 
@@ -25,7 +26,7 @@ RUN \
 # install mixcr
 RUN \
   cd /opt && \
-  wget https://github.com/milaboratory/mixcr/releases/download/v2.1.9/mixcr-${mixcr_version}.zip && \
+  wget https://github.com/milaboratory/mixcr/releases/download/v${mixcr_version}/mixcr-${mixcr_version}.zip && \
   unzip -o mixcr-*.zip && \
   rm mixcr-*.zip && \
   mv /opt/mixcr-${mixcr_version} /opt/mixcr && \
@@ -51,10 +52,48 @@ RUN \
   apt-get update && \
   apt-get -yq install r-base r-base-dev && \
   apt-get -yq install libatlas3-base && \
-  Rscript -e 'install.packages("vegan", repos="https://cran.rstudio.com")'
+  Rscript -e 'install.packages("vegan", repos="https://cran.rstudio.com")' && \
+  Rscript -e 'install.packages("data.table", repos="https://cran.rstudio.com")'
 
+# install vdjtools to run diversity metrics 
+RUN \
+  cd /opt && \
+  wget https://github.com/mikessh/vdjtools/releases/download/${vdjtools_version}/vdjtools-${vdjtools_version}.zip && \
+  unzip -o vdjtools-*.zip && \
+  rm vdjtools-*.zip
+
+# install pigz for seqkit and for decompressing gz files faster.
+# RUN \
+#  cd /opt && \
+#  wget http://zlib.net/pigz/pigz-${pigz_version}.tar.gz && \
+#  tar -zxvf pigz*.tar.gz
+#rm pigz*.tar.gz
+  
+# install seqkit to remove fastqs by ids
+# RUN \
+#  cd /opt && \
+#  wget https://github.com/shenwei356/seqkit/releases/download/v${seqkit_version}/seqkit_linux_amd64.tar.gz && \
+#  tar -zxvf seqkit*.tar.gz
+#rm seqkit*.tar.gz
+  
 COPY import/ /import/
 
+# install pigz for seqkit and for decompressing gz files faster.
+RUN \
+  cd /import && \
+  tar -zxvf pigz*.tar.gz && \
+  rm pigz*.tar.gz && \
+  cd pigz* && \
+  make && \
+  ln -s /import/pigz-${pigz_version}/pigz /usr/local/bin
+  
+# install seqkit to remove fastqs by ids
+RUN \
+  cd /import && \
+  tar -zxvf seqkit*.tar.gz && \
+  rm seqkit*.tar.gz && \
+  ln -s /import/seqkit /usr/local/bin
+  
 RUN apt-get clean
 
 
@@ -82,7 +121,7 @@ ENV SAMPLE_NAME "no_sample_name_specified"
 # bash -c 'source /datastore/alldata/shiny-server/rstudio-common/dbortone/docker/mixcr/mixcr_2.1.9/import/run_mixcr.sh \
 
 CMD \
-bash -c 'source /import/run_mixcr.sh \
+bash -c 'source /datastore/alldata/shiny-server/rstudio-common/dbortone/docker/mixcr/mixcr_2.1.9/import/run_mixcr.sh \
  --chains "${CHAINS}" \
  --rna_seq "${RNA_SEQ}" \
  --use_existing_vdjca "${USE_EXISTING_VDJCA}" \
@@ -93,23 +132,3 @@ bash -c 'source /import/run_mixcr.sh \
  --output_dir "${OUTPUT_DIR}" \
  --sample_name "${SAMPLE_NAME}"'
  
-# need to list out all of the nodes that have docker partitions to make sure that the dokcer image is pushed to all of them
-# If you are building an image to a previously existing <sometool>:<version> you need to pull the changes to all of the docker nodes.
-# removing the image before rebuilding it isn't enough.
-# srun --pty -c 2 --mem 1g -w c6145-docker-2-0.local -p docker bash
-# cd /datastore/alldata/shiny-server/rstudio-common/dbortone/docker/mixcr/mixcr_2.1.9
-# docker build -t dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:1 .
-# docker push dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:1
-# exit
-# srun --pty -c 2 --mem 1g -w fc830-docker-2-0.local -p docker bash
-# docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:1
-# exit
-# srun --pty -c 2 --mem 1g -w r820-docker-2-0.local -p docker bash
-# docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:1
-# 
-# [dbortone@login2 ~]$ sinfo -p docker
-# PARTITION AVAIL  TIMELIMIT  NODES  STATE NODELIST
-# docker       up   infinite      1    mix c6145-docker-2-0.local
-# docker       up   infinite      2   idle fc830-docker-2-0.local,r820-docker-2-0.local
-#
-#

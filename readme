@@ -8,14 +8,14 @@ If you are building an image to a previously existing <sometool>:<version> you n
 removing the image before rebuilding it isn't enough.
 srun --pty -c 2 --mem 1g -w c6145-docker-2-0.local -p docker bash
 cd /datastore/alldata/shiny-server/rstudio-common/dbortone/docker/mixcr/mixcr_2.1.9
-docker build -t dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:1 .
-docker push dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:1
+docker build -t dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:2 .
+docker push dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:2
 exit
 srun --pty -c 2 --mem 1g -w fc830-docker-2-0.local -p docker bash
-docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:1
+docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:2
 exit
 srun --pty -c 2 --mem 1g -w r820-docker-2-0.local -p docker bash
-docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:1
+docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:2
 
 [dbortone@login2 ~]$ sinfo -p docker
 PARTITION AVAIL  TIMELIMIT  NODES  STATE NODELIST
@@ -23,9 +23,19 @@ docker       up   infinite      1    mix c6145-docker-2-0.local
 docker       up   infinite      2   idle fc830-docker-2-0.local,r820-docker-2-0.local
 
 
+docker variables are:
+bash -c 'source /import/run_mixcr.sh \
+ --chains "${CHAINS}" \
+ --rna_seq "${RNA_SEQ}" \
+ --use_existing_vdjca "${USE_EXISTING_VDJCA}" \
+ --species "${SPECIES}" \
+ --threads "${THREADS}" \
+ --r1_path "${INPUT_PATH_1}" \
+ --r2_path "${INPUT_PATH_2}" \
+ --output_dir "${OUTPUT_DIR}" \
+ --sample_name "${SAMPLE_NAME}"'
 
-then exit and run on bioinf
-
+# run on bioinf
 mkdir -p /datastore/nextgenout2/share/labs/imgf/datasets/Sharpless_IP61/mixcr/AE001-1T-SH-TCR_CGTACTAG-TAGATCGC_S3_L001/
 sbatch AE001-1T-SH-TCR_CGTACTAG-TAGATCGC_S3_L001.job
 
@@ -49,5 +59,7 @@ docker run --rm=true \
   -e INPUT_PATH_2=/datastore/nextgenout4/seqware-analysis/illumina/170724_UNC18-D00493_0434_BCB95DANXX/1520-108-PRETX-RNA06_ACAGTG_S27_L008_R2_001.fastq.gz \
   -e OUTPUT_DIR=/datastore/nextgenout2/share/labs/imgf/datasets/Merck1520_IP59/mixcr/p108_Pre_Tumor/ \
   -e SAMPLE_NAME=p108_Pre_Tumor \
-  mixcr_2.1.7:1
+  mixcr_2.1.9:1
 
+# for interactive session
+srun --pty -c 1 --mem 1g -p docker -w c6145-docker-2-0.local docker run -v /datastore:/datastore:shared  -it dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:2 bash

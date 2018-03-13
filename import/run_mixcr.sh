@@ -59,11 +59,8 @@ clone_log="${FILE_PREFIX}clone_log.txt"
 clone_txt="${FILE_PREFIX}clones.txt"
 index_file="${FILE_PREFIX}index_file"
 extended_alignment="${FILE_PREFIX}extended_alignment.vdjca"
-aligned_r1="${FILE_PREFIX}aligned_r1.fastq"
-aligned_r2="${FILE_PREFIX}aligned_r2.fastq"
-unaligned_r1="${FILE_PREFIX}unaligned_r1.fastq"
-unaligned_r2="${FILE_PREFIX}unaligned_r2.fastq"
-
+aligned_r1="${FILE_PREFIX}aligned_r1.fastq.gz"
+aligned_r2="${FILE_PREFIX}aligned_r2.fastq.gz"
 
 if [ "$RNA_SEQ" == true ] ; then
  echo "Running with RNA-Seq parameters."
@@ -97,8 +94,6 @@ if [ "$run_align" == true ] ; then
     --write-all \
     --save-reads \
     --library imgt \
-    --not-aligned-R1 ${unaligned_r1} \
-    --not-aligned-R2 ${unaligned_r2} \
     --parameters $align_parameter \
     -OallowPartialAlignments=$RNA_SEQ \
     -r ${alignment_log} \
@@ -107,19 +102,33 @@ if [ "$run_align" == true ] ; then
     -t ${THREADS} \
     ${INPUT_PATH_1} ${INPUT_PATH_2} \
     ${alignment}
+  echo "Finished MiXCR align."
 fi
 
+
 if [ "$RNA_SEQ" == true ] ; then
-  # run two partial assemblies and an alignment extension
-  echo "Running two partial assemblies and an alignment extension for RNA-Seq."
-  echo ""
   extended_alignment="${file_prefix}extended_alignment.vdjca"
+  echo ""
+  echo ""
+  echo "Running RNA-Seq specific step assemblePartial 1..."
+  echo ""
   mixcr assemblePartial -r ap1_report.txt -f ${alignment} alignments_rescued_1.vdjca
+  echo "Finished RNA-Seq specific step assemblePartial 1."
+  echo ""
+  echo ""
+  echo "Running RNA-Seq specific step assemblePartial 2..."
+  echo ""
   mixcr assemblePartial -r ap2_report.txt -f alignments_rescued_1.vdjca alignments_rescued_2.vdjca
+    echo "Finished RNA-Seq specific step assemblePartial 2."
+  echo ""
+  echo "Running RNA-Seq specific step extendAlignments..."
+  echo ""
   mixcr extendAlignments -r extension_report.txt -f alignments_rescued_2.vdjca "$extended_alignment"
+  echo "Finished RNA-Seq specific step extendAlignments."
 
   alignment="$extended_alignment"
 fi
+
 
 echo ""
 echo ""
@@ -131,22 +140,21 @@ mixcr assemble -f \
   -r ${clone_log} \
   -t ${THREADS} \
   ${alignment} ${clone_assembly}
-
+echo "Finshed MiXCR assemble."
 echo ""
 echo ""
 echo "Running MiXCR exportAlignments..."
 echo ""
 mixcr exportAlignments -f \
   -cloneIdWithMappingType ${index_file} \
-  -readId -sequence -quality -targets  -aaFeature CDR3 \
+  -readId -sequence -quality -targets  -aaFeature CDR3 -descrR1 -descrR2\
   ${alignment} \
   ${alignment_txt}
-
+echo "Finshed MiXCR exportAlignments."
 echo ""
 echo ""
 echo "Running MiXCR exportClones..."
 echo ""
-# -c --chains is the new way to get the clone fractions
 mixcr exportClones -f -chains \
   --filter-out-of-frames \
   --filter-stops \
@@ -157,6 +165,7 @@ mixcr exportClones -f -chains \
   -vHitsWithScore -dHitsWithScore -jHitsWithScore \
   ${clone_assembly} \
   ${clone_txt}
+echo "Finshed MiXCR exportClones."
 
 echo ""
 echo ""
@@ -201,34 +210,54 @@ fi
 echo "${mixcr_columns}" > mixcr_qc.csv
 echo "${mixcr_qc}" >> mixcr_qc.csv
 
+echo "Finished grabbing data from MiXCR logs."
+echo ""
 echo ""
 echo "Computing diversity metrics..."
 echo ""
 Rscript /import/rscripts/process_mixcr.R $SAMPLE_NAME $clone_txt mixcr_stats.csv
-
+echo "Completed running diversity mixcr stats."
 echo ""
-echo "Make fastq file with only the aligned reads..."
 echo ""
+echo "Extracting aligned reads used in clonotypes before clustering..."
+Rscript -e "
+aligned_df = data.table::fread('${alignment_txt}', data.table = F); \
+aligned_df = aligned_df[aligned_df[,'aaSeqCDR3'] != '',]; \
+aligned_df = aligned_df[!grepl('dropped',aligned_df[,'cloneMapping']),]; \
+writeLines(aligned_df[,'descrR1'], 'aligned_r1_ids.txt'); \
+writeLines(aligned_df[,'descrR2'], 'aligned_r2_ids.txt');
+"
+seqkit grep -n -j ${THREADS} --pattern-file aligned_r1_ids.txt ${INPUT_PATH_1} -o ${aligned_r1}
+seqkit grep -n -j ${THREADS} --pattern-file aligned_r2_ids.txt ${INPUT_PATH_2} -o ${aligned_r2}
 
-# ow=t (overwrite) Overwrites files that already exist.
-# include=f Set to 'true' to include the filtered names rather than excluding them.
-# -Xmx2g \ removed
-
-/import/bbmap/filterbyname.sh \
-  ow=t \
-  in=${INPUT_PATH_1} \
-  in2=${INPUT_PATH_2} \
-  out=${aligned_r1} \
-  out2=${aligned_r2} \
-  names=${unaligned_r1} \
-  include=f
-
+echo "Completed extracting aligned reads."
 echo ""
 echo ""
 echo "Running FastQC on aligned reads..."
 echo ""
 fastqc -t ${THREADS} --outdir="." ${aligned_r1}
 fastqc -t ${THREADS} --outdir="." ${aligned_r2}
+echo "Completed fastqc."
+echo ""
+echo ""
+echo "Running:mixcr exportClones to output default output which will easily run on vdjtools"
+echo ""
+clone_default_txt="${file_prefix}_clones_default_output.txt"
+mixcr exportClones \
+  --preset full \
+  -f ${clone_assembly} ${clone_default_txt}
+echo "Completed exportClones."
+echo ""
+echo ""
+echo "Running vdjtools..."
+echo ""
+java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar Convert -S mixcr ${clone_default_txt} vdjtools
+java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar CalcBasicStats vdjtools.${clone_default_txt} vdjtools
+java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar CalcSegmentUsage vdjtools.${clone_default_txt} vdjtools
+java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar CalcSpectratype vdjtools.${clone_default_txt} vdjtools
+java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar CalcSpectratype --amino-acid vdjtools.${clone_default_txt} vdjtools
+java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar CalcDiversityStats vdjtools.${clone_default_txt} vdjtools
+echo "Completed vdjtools."
 
-chmod 666 *
+
 
