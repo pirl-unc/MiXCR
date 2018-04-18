@@ -54,7 +54,8 @@ RUN \
   apt-get -yq install libatlas3-base && \
   Rscript -e 'install.packages("vegan", repos="https://cran.rstudio.com")' && \
   Rscript -e 'install.packages("data.table", repos="https://cran.rstudio.com")'
-
+# parallel is already there and can't be installed like this anyway  
+  
 # install vdjtools to run diversity metrics 
 RUN \
   cd /opt && \

@@ -253,9 +253,9 @@ echo "Running vdjtools..."
 echo ""
 java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar Convert -S mixcr ${clone_default_txt} vdjtools
 java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar CalcBasicStats vdjtools.${clone_default_txt} vdjtools
-java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar CalcSegmentUsage vdjtools.${clone_default_txt} vdjtools
-java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar CalcSpectratype vdjtools.${clone_default_txt} vdjtools
-java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar CalcSpectratype --amino-acid vdjtools.${clone_default_txt} vdjtools
+#java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar CalcSegmentUsage vdjtools.${clone_default_txt} vdjtools
+#java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar CalcSpectratype vdjtools.${clone_default_txt} vdjtools
+#java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar CalcSpectratype --amino-acid vdjtools.${clone_default_txt} vdjtools
 java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar CalcDiversityStats vdjtools.${clone_default_txt} vdjtools
 echo "Completed vdjtools."
 
