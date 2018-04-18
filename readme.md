@@ -5,12 +5,12 @@ This docker executable runs MiXCR with the following versions:
 * vdjtools_version=1.1.7
 
 It has the following arguments:
-* CHAINS - gets fed to --chains arg for mixcr align. From site:
+* CHAINS - gets fed to --chains arg for mixcr align. From site:  
 > Target immunological chain list separated by “,”. Available values: IGH, IGL, IGK, TRA, TRB, TRG, TRD, IG (for all immunoglobulin chains), TCR (for all T-cell receptor chains), ALL (for all chains) . It is highly recomended to use the default value for this parameter in most cases at the align step. Filltering is also possible at the export step.
 * RNA_SEQ - If set to true, it runs with rna seq parameters as described here: http://mixcr.readthedocs.io/en/master/rnaseq.html
 * USE_EXISTING_VDJCA - looks for and uses existing VDJCA file if this is set to true
 * SPECIES - hsa or 
-* THREADS - gets fed to --species arg for mixcr align. From site:
+* THREADS - gets fed to --species arg for mixcr align. From site:  
 > Species (organism). Possible values: hsa (or HomoSapiens), mmu (or MusMusculus), rat (currently only TRB, TRA and TRD are supported), or any species from imported IMGT ® library...
 * INPUT_PATH_1 - full path to fastq for read 1
 * INPUT_PATH_2 - full path to fastq for read 1
