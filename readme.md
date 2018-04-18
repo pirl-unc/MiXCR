@@ -6,7 +6,9 @@ This docker executable runs MiXCR with the following versions:
 
 It has the following arguments:
 * CHAINS - gets fed to --chains arg for mixcr align. From site:  
-> Target immunological chain list separated by “,”. Available values: IGH, IGL, IGK, TRA, TRB, TRG, TRD, IG (for all immunoglobulin chains), TCR (for all T-cell receptor chains), ALL (for all chains) . It is highly recomended to use the default value for this parameter in most cases at the align step. Filltering is also possible at the export step.
+>>>
+Target immunological chain list separated by “,”. Available values: IGH, IGL, IGK, TRA, TRB, TRG, TRD, IG (for all immunoglobulin chains), TCR (for all T-cell receptor chains), ALL (for all chains) . It is highly recomended to use the default value for this parameter in most cases at the align step. Filltering is also possible at the export step.
+>>>
 * RNA_SEQ - If set to true, it runs with rna seq parameters as described here: http://mixcr.readthedocs.io/en/master/rnaseq.html
 * USE_EXISTING_VDJCA - looks for and uses existing VDJCA file if this is set to true
 * SPECIES - hsa or 
