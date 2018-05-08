@@ -18,6 +18,7 @@ Target immunological chain list separated by “,”. Available values: IGH, IGL
 * INPUT_PATH_2 - full path to fastq for read 1
 * OUTPUT_DIR - path to folder where output should be stored. this needs to exist prior to running
 * SAMPLE_NAME - name of sample.  This should be unique.
+* DEBUG_MODE - true  will pull the sh script from the cluster version of the code rather than the locally stored one. This allows changes to be made and have them go into effect instantly, without needing to rebuild the docker image and push/pull the changes.  When done with debugging the changes should be push/pulled to all the nodes so the changes go into effect and are kept in the image rather than locally.
 
 Steps to build an image and run it on slurm
 
@@ -40,9 +41,10 @@ docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:2
 
 [dbortone@login2 ~]$ sinfo -p docker
 PARTITION AVAIL  TIMELIMIT  NODES  STATE NODELIST
-docker       up   infinite      1    mix c6145-docker-2-0.local
-docker       up   infinite      2   idle fc830-docker-2-0.local,r820-docker-2-0.local
-
+docker       up   infinite      4   idle c6145-docker-2-0.local,fc830-docker-2-0.local,r820-docker-2-0.local,r820-docker-2-1.local
+`srun --pty -c 1 --mem 1g -w r820-docker-2-0.local -p docker bash -c "docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:2"
+srun --pty -c 1 --mem 1g -w r820-docker-2-1.local -p docker bash -c "docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:2"
+srun --pty -c 1 --mem 1g -w fc830-docker-2-0.local -p docker bash -c "docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:2"`
 
 docker variables are:
 bash -c 'source /import/run_mixcr.sh \
@@ -84,3 +86,8 @@ docker run --rm=true \
 
 # for interactive session
 srun --pty -c 1 --mem 1g -p docker -w c6145-docker-2-0.local docker run -v /datastore:/datastore:shared  -it dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:2 bash
+
+# pull image to all nodes
+`srun --pty -c 1 --mem 1g -w r820-docker-2-0.local -p docker bash -c "docker pull dockerreg.bioinf.unc.edu:5000/tcrer_1:1"
+srun --pty -c 1 --mem 1g -w r820-docker-2-1.local -p docker bash -c "docker pull dockerreg.bioinf.unc.edu:5000/tcrer_1:1"
+srun --pty -c 1 --mem 1g -w fc830-docker-2-0.local -p docker bash -c "docker pull dockerreg.bioinf.unc.edu:5000/tcrer_1:1"`

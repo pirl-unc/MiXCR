@@ -117,19 +117,32 @@ ENV INPUT_PATH_2 ""
 ENV OUTPUT_DIR ""
 ENV SAMPLE_NAME "no_sample_name_specified"
 
+#  DEBUG_MODE:true  will pull the sh script from the cluster version of the code rather than the locally stored one.
+#    This allows changes to be made and have them go into effect instantly, wihtout needing to rebuild the docker image
+#    and push/pull the changes.  When done with debugging the changes should be push/pulled to all the nodes so the changes.
+#    go into effect and are kept in the image rather than locally.
+ENV DEBUG_MODE false
+
 # once debugged switch to
 # bash -c 'source /import/run_mixcr.sh \
 # bash -c 'source /datastore/alldata/shiny-server/rstudio-common/dbortone/docker/mixcr/mixcr_2.1.9/import/run_mixcr.sh \
 
 CMD \
-bash -c 'source /datastore/alldata/shiny-server/rstudio-common/dbortone/docker/mixcr/mixcr_2.1.9/import/run_mixcr.sh \
- --chains "${CHAINS}" \
- --rna_seq "${RNA_SEQ}" \
- --use_existing_vdjca "${USE_EXISTING_VDJCA}" \
- --species "${SPECIES}" \
- --threads "${THREADS}" \
- --r1_path "${INPUT_PATH_1}" \
- --r2_path "${INPUT_PATH_2}" \
- --output_dir "${OUTPUT_DIR}" \
- --sample_name "${SAMPLE_NAME}"'
+  if [ ${DEBUG_MODE} = "true" ] ; \
+    then \
+      import_dir="/datastore/alldata/shiny-server/rstudio-common/dbortone/docker/mixcr/mixcr_2.1.9/import"; \
+      echo "DEBUG MODE: Local sh file will be used instead of local docker container script."; \
+      echo ""; \
+    else import_dir="/import"; \
+    fi && \
+  bash -c 'source ${import_dir}/run_mixcr.sh \
+    --chains "${CHAINS}" \
+    --rna_seq "${RNA_SEQ}" \
+    --use_existing_vdjca "${USE_EXISTING_VDJCA}" \
+    --species "${SPECIES}" \
+    --threads "${THREADS}" \
+    --r1_path "${INPUT_PATH_1}" \
+    --r2_path "${INPUT_PATH_2}" \
+    --output_dir "${OUTPUT_DIR}" \
+    --sample_name "${SAMPLE_NAME}"'
  
