@@ -37,7 +37,8 @@ for (this_chain in chains) {
   my_shannon_entropy = shannon_entropy(my_counts)
   my_evenness = evenness(my_counts)
   my_inv_simpson = inv_simpson(my_counts)
-
+  my_chao1 = as.numeric(estimateR(round(my_counts))["S.chao1"])
+  
   output_stats[paste0(this_chain,"_Abundance")] = sum(my_counts)
   output_stats[paste0(this_chain,"_Fraction")] = chain_summary[this_chain]
   output_stats[paste0(this_chain,"_Richness")] = as.character(my_count)
@@ -45,6 +46,8 @@ for (this_chain in chains) {
   output_stats[paste0(this_chain,"_Shannon_Entropy")] = format_floats(my_shannon_entropy)
   output_stats[paste0(this_chain,"_Evenness")] = format_floats(my_evenness)
   output_stats[paste0(this_chain,"_Inv_Simpson")] = format_floats(my_inv_simpson)
+  output_stats[paste0(this_chain,"_Chao1")] = format_floats(my_chao1)
+  
   #my_simpson_div
 }
 
@@ -56,6 +59,7 @@ output_stats = output_stats[c(
   grep("_Shannon_Entropy", names(output_stats)),
   grep("_Evenness", names(output_stats)),
   grep("_Inv_Simpson", names(output_stats)),
+  grep("_Chao1", names(output_stats)),
   grep("_Counts", names(output_stats))
  )]
 

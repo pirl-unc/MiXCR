@@ -104,10 +104,12 @@ ENV CHAINS "ALL"
 
 # RNA_SEQ values are true or false
 # runs with rna seq parameters if set to true
+# will convert text of this value to lowercaase
 ENV RNA_SEQ true
 
 # USE_EXISTING_VDJCA values are true or false
 # looks for and uses existing VDJCA file if this is set to true
+# will convert text of this value to lowercase
 ENV USE_EXISTING_VDJCA false
 
 ENV SPECIES "hsa"
@@ -116,6 +118,7 @@ ENV INPUT_PATH_1 ""
 ENV INPUT_PATH_2 ""
 ENV OUTPUT_DIR ""
 ENV SAMPLE_NAME "no_sample_name_specified"
+ENV IMPORT_DIR "/import"
 
 #  DEBUG_MODE:true  will pull the sh script from the cluster version of the code rather than the locally stored one.
 #    This allows changes to be made and have them go into effect instantly, wihtout needing to rebuild the docker image
@@ -123,26 +126,24 @@ ENV SAMPLE_NAME "no_sample_name_specified"
 #    go into effect and are kept in the image rather than locally.
 ENV DEBUG_MODE false
 
-# once debugged switch to
-# bash -c 'source /import/run_mixcr.sh \
-# bash -c 'source /datastore/alldata/shiny-server/rstudio-common/dbortone/docker/mixcr/mixcr_2.1.9/import/run_mixcr.sh \
 
 CMD \
   if [ ${DEBUG_MODE} = "true" ] ; \
     then \
-      import_dir="/datastore/alldata/shiny-server/rstudio-common/dbortone/docker/mixcr/mixcr_2.1.9/import"; \
+      IMPORT_DIR="/datastore/alldata/shiny-server/rstudio-common/dbortone/docker/mixcr/mixcr_2.1.9/import"; \
       echo "DEBUG MODE: Local sh file will be used instead of local docker container script."; \
-      echo ""; \
-    else import_dir="/import"; \
-    fi && \
-  bash -c 'source ${import_dir}/run_mixcr.sh \
-    --chains "${CHAINS}" \
-    --rna_seq "${RNA_SEQ}" \
-    --use_existing_vdjca "${USE_EXISTING_VDJCA}" \
-    --species "${SPECIES}" \
-    --threads "${THREADS}" \
-    --r1_path "${INPUT_PATH_1}" \
-    --r2_path "${INPUT_PATH_2}" \
-    --output_dir "${OUTPUT_DIR}" \
-    --sample_name "${SAMPLE_NAME}"'
+  else \
+    echo "Debug mode is off."; \
+  fi && \
+  bash -c "source ${IMPORT_DIR}/run_mixcr.sh \
+    --import_dir ${IMPORT_DIR} \
+    --chains ${CHAINS} \
+    --rna_seq ${RNA_SEQ} \
+    --use_existing_vdjca ${USE_EXISTING_VDJCA} \
+    --species ${SPECIES} \
+    --threads ${THREADS} \
+    --r1_path ${INPUT_PATH_1} \
+    --r2_path ${INPUT_PATH_2} \
+    --output_dir ${OUTPUT_DIR} \
+    --sample_name ${SAMPLE_NAME}"
  

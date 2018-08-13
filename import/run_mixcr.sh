@@ -4,11 +4,17 @@
 # should be outputting the default clone export so that vdjtools works on the output
 # this would require some rewritting of the script to get the clone diversity stats
 
+echo "Running run_mixcr.sh script..."
+echo ""
 
 while [ $# -gt 0 ]; do
   case "$1" in
+    --import_dir=*)
+      IMPORT_DIR="${1#*=}"
+      ;;
     --chains=*)
       CHAINS="${1#*=}"
+      echo "chains say hi"
       ;;
     --rna_seq=*)
       RNA_SEQ="${1#*=}"
@@ -38,6 +44,7 @@ while [ $# -gt 0 ]; do
   shift
 done
 
+echo "IMPORT_DIR: ${IMPORT_DIR}"
 echo "CHAINS: ${CHAINS}"
 echo "RNA_SEQ: ${RNA_SEQ}"
 echo "USE_EXISTING_VDJCA: ${USE_EXISTING_VDJCA}"
@@ -62,6 +69,9 @@ extended_alignment="${FILE_PREFIX}extended_alignment.vdjca"
 aligned_r1="${FILE_PREFIX}aligned_r1.fastq.gz"
 aligned_r2="${FILE_PREFIX}aligned_r2.fastq.gz"
 
+RNA_SEQ=$(echo "$RNA_SEQ" | awk '{print tolower($0)}')
+USE_EXISTING_VDJCA=$(echo "$USE_EXISTING_VDJCA" | awk '{print tolower($0)}')
+
 if [ "$RNA_SEQ" == true ] ; then
  echo "Running with RNA-Seq parameters."
  align_parameter="rna-seq"
@@ -75,8 +85,8 @@ echo ""
 run_align=true
 if [ "$USE_EXISTING_VDJCA" == true ] ; then
 echo "Checking if VDJCA file exists..."
-  if [ ! -z $(ls $alignment) ] ; then
-    echo "Using existing VDJCA file."
+  if [ -f $alignment ] ; then
+    echo "File exists. Using existing VDJCA file."
     run_align=false
   else
     echo "There was no existing VDJCA file. MiXCR align will need to be run. "
@@ -92,6 +102,7 @@ if [ "$run_align" == true ] ; then
   echo ""
   mixcr align -f \
     --write-all \
+    --save-description \
     --save-reads \
     --library imgt \
     --parameters $align_parameter \
@@ -140,7 +151,7 @@ mixcr assemble -f \
   -r ${clone_log} \
   -t ${THREADS} \
   ${alignment} ${clone_assembly}
-echo "Finshed MiXCR assemble."
+echo "Finished MiXCR assemble."
 echo ""
 echo ""
 echo "Running MiXCR exportAlignments..."
@@ -171,20 +182,20 @@ echo ""
 echo ""
 echo "Grabbing data from MiXCR logs..."
 echo ""
-Rscript /import/rscripts/extract_mixcr_align_stats.R ${alignment_log} align_stats.csv
+Rscript ${IMPORT_DIR}/rscripts/extract_mixcr_align_stats.R ${alignment_log} align_stats.csv
 align_columns=$(head -n 1 align_stats.csv)
 align_stats=$(sed '2q;d' align_stats.csv)
 
-Rscript /import/rscripts/extract_mixcr_clone_assembly_stats.R ${clone_log} clone_stats.csv
+Rscript ${IMPORT_DIR}/rscripts/extract_mixcr_clone_assembly_stats.R ${clone_log} clone_stats.csv
 clone_columns=$(head -n 1 clone_stats.csv)
 clone_stats=$(sed '2q;d' clone_stats.csv)
 
 if [ "$RNA_SEQ" == true ] ; then
   # grab partial align and extension log output
-  Rscript /import/rscripts/extract_mixcr_partial_assembly_stats.R ap1_report.txt ap1_stats.csv ap1_
-  Rscript /import/rscripts/extract_mixcr_partial_assembly_stats.R ap2_report.txt ap2_stats.csv ap2_
-  Rscript /import/rscripts/extract_mixcr_extension_stats.R extension_report.txt extension_stats.csv
-  
+  Rscript ${IMPORT_DIR}/rscripts/extract_mixcr_partial_assembly_stats.R ap1_report.txt ap1_stats.csv ap1_
+  Rscript ${IMPORT_DIR}/rscripts/extract_mixcr_partial_assembly_stats.R ap2_report.txt ap2_stats.csv ap2_
+  Rscript ${IMPORT_DIR}/rscripts/extract_mixcr_extension_stats.R extension_report.txt extension_stats.csv
+
   align_columns=$(head -n 1 align_stats.csv)
   align_stats=$(sed '2q;d' align_stats.csv)
 
@@ -199,12 +210,12 @@ if [ "$RNA_SEQ" == true ] ; then
 
   mixcr_columns="Sample_ID,${clone_columns},${align_columns},${ap1_columns},${ap2_columns},${extension_columns}"
   mixcr_qc="${SAMPLE_NAME},${clone_stats},${align_stats},${ap1_stats},${ap2_stats},${extension_stats}"
-  
+
 else
 
   mixcr_columns="Sample_ID,${clone_columns},${align_columns}"
   mixcr_qc="${SAMPLE_NAME},${clone_stats},${align_stats}"
-  
+
 fi
 
 echo "${mixcr_columns}" > mixcr_qc.csv
@@ -215,7 +226,7 @@ echo ""
 echo ""
 echo "Computing diversity metrics..."
 echo ""
-Rscript /import/rscripts/process_mixcr.R $SAMPLE_NAME $clone_txt mixcr_stats.csv
+Rscript ${IMPORT_DIR}/rscripts/process_mixcr.R $SAMPLE_NAME $clone_txt mixcr_stats.csv
 echo "Completed running diversity mixcr stats."
 echo ""
 echo ""
@@ -253,11 +264,10 @@ echo "Running vdjtools..."
 echo ""
 java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar Convert -S mixcr ${clone_default_txt} vdjtools
 java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar CalcBasicStats vdjtools.${clone_default_txt} vdjtools
-#java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar CalcSegmentUsage vdjtools.${clone_default_txt} vdjtools
-#java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar CalcSpectratype vdjtools.${clone_default_txt} vdjtools
-#java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar CalcSpectratype --amino-acid vdjtools.${clone_default_txt} vdjtools
 java -Xmx16G -jar /opt/vdjtools-1.1.7/vdjtools-1.1.7.jar CalcDiversityStats vdjtools.${clone_default_txt} vdjtools
 echo "Completed vdjtools."
-
+echo ""
+echo ""
+echo "Finished running run_mixcr.sh script"
 
 
