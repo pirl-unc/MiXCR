@@ -101,8 +101,6 @@ if [ "$run_align" == true ] ; then
   echo "Running MiXCR align..."
   echo ""
   mixcr align -f \
-    --write-all \
-    --save-description \
     --save-reads \
     --library imgt \
     --parameters $align_parameter \
@@ -114,6 +112,12 @@ if [ "$run_align" == true ] ; then
     ${INPUT_PATH_1} ${INPUT_PATH_2} \
     ${alignment}
   echo "Finished MiXCR align."
+  
+  echo ""
+  echo "Exporting aligned reads..."
+  mixcr exportReads ${alignment} ${aligned_r1} ${aligned_r2}
+  echo "Finished export."
+  echo ""
 fi
 
 
@@ -158,7 +162,7 @@ echo "Running MiXCR exportAlignments..."
 echo ""
 mixcr exportAlignments -f \
   -cloneIdWithMappingType ${index_file} \
-  -readId -sequence -quality -targets  -aaFeature CDR3 -descrR1 -descrR2\
+  -readId -sequence -quality -targets  -aaFeature CDR3\
   ${alignment} \
   ${alignment_txt}
 echo "Finshed MiXCR exportAlignments."
@@ -229,20 +233,20 @@ echo ""
 Rscript ${IMPORT_DIR}/rscripts/process_mixcr.R $SAMPLE_NAME $clone_txt mixcr_stats.csv
 echo "Completed running diversity mixcr stats."
 echo ""
-echo ""
-echo "Extracting aligned reads used in clonotypes before clustering..."
-Rscript -e "
-aligned_df = data.table::fread('${alignment_txt}', data.table = F); \
-aligned_df = aligned_df[aligned_df[,'aaSeqCDR3'] != '',]; \
-aligned_df = aligned_df[!grepl('dropped',aligned_df[,'cloneMapping']),]; \
-writeLines(aligned_df[,'descrR1'], 'aligned_r1_ids.txt'); \
-writeLines(aligned_df[,'descrR2'], 'aligned_r2_ids.txt');
-"
-seqkit grep -n -j ${THREADS} --pattern-file aligned_r1_ids.txt ${INPUT_PATH_1} -o ${aligned_r1}
-seqkit grep -n -j ${THREADS} --pattern-file aligned_r2_ids.txt ${INPUT_PATH_2} -o ${aligned_r2}
-
-echo "Completed extracting aligned reads."
-echo ""
+# echo ""
+# echo "Extracting aligned reads used in clonotypes before clustering..."
+# Rscript -e "
+# aligned_df = data.table::fread('${alignment_txt}', data.table = F); \
+# aligned_df = aligned_df[aligned_df[,'aaSeqCDR3'] != '',]; \
+# aligned_df = aligned_df[!grepl('dropped',aligned_df[,'cloneMapping']),]; \
+# writeLines(aligned_df[,'descrR1'], 'aligned_r1_ids.txt'); \
+# writeLines(aligned_df[,'descrR2'], 'aligned_r2_ids.txt');
+# "
+# seqkit grep -n -j ${THREADS} --pattern-file aligned_r1_ids.txt ${INPUT_PATH_1} -o ${aligned_r1}
+# seqkit grep -n -j ${THREADS} --pattern-file aligned_r2_ids.txt ${INPUT_PATH_2} -o ${aligned_r2}
+# 
+# echo "Completed extracting aligned reads."
+# echo ""
 echo ""
 echo "Running FastQC on aligned reads..."
 echo ""

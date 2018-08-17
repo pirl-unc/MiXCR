@@ -63,20 +63,6 @@ RUN \
   unzip -o vdjtools-*.zip && \
   rm vdjtools-*.zip
 
-# install pigz for seqkit and for decompressing gz files faster.
-# RUN \
-#  cd /opt && \
-#  wget http://zlib.net/pigz/pigz-${pigz_version}.tar.gz && \
-#  tar -zxvf pigz*.tar.gz
-#rm pigz*.tar.gz
-  
-# install seqkit to remove fastqs by ids
-# RUN \
-#  cd /opt && \
-#  wget https://github.com/shenwei356/seqkit/releases/download/v${seqkit_version}/seqkit_linux_amd64.tar.gz && \
-#  tar -zxvf seqkit*.tar.gz
-#rm seqkit*.tar.gz
-  
 COPY import/ /import/
 
 # install pigz for seqkit and for decompressing gz files faster.
@@ -87,13 +73,6 @@ RUN \
   cd pigz* && \
   make && \
   ln -s /import/pigz-${pigz_version}/pigz /usr/local/bin
-  
-# install seqkit to remove fastqs by ids
-RUN \
-  cd /import && \
-  tar -zxvf seqkit*.tar.gz && \
-  rm seqkit*.tar.gz && \
-  ln -s /import/seqkit /usr/local/bin
   
 RUN apt-get clean
 
