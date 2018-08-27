@@ -40,6 +40,9 @@ while [ $# -gt 0 ]; do
     --sample_name=*)
       SAMPLE_NAME="${1#*=}"
       ;;
+    --seperate_by_c=*)
+      SEPERATE_BY_C="${1#*=}"
+      ;;
   esac
   shift
 done
@@ -54,6 +57,7 @@ echo "INPUT_PATH_1: ${INPUT_PATH_1}"
 echo "INPUT_PATH_2: ${INPUT_PATH_2}"
 echo "OUTPUT_DIR: ${OUTPUT_DIR}"
 echo "SAMPLE_NAME: ${SAMPLE_NAME}"
+echo "SEPERATE_BY_C: ${SEPERATE_BY_C}"
 echo ""
 FILE_PREFIX=${SAMPLE_NAME}_
 
@@ -71,6 +75,7 @@ aligned_r2="${FILE_PREFIX}aligned_r2.fastq.gz"
 
 RNA_SEQ=$(echo "$RNA_SEQ" | awk '{print tolower($0)}')
 USE_EXISTING_VDJCA=$(echo "$USE_EXISTING_VDJCA" | awk '{print tolower($0)}')
+SEPERATE_BY_C=$(echo "$SEPERATE_BY_C" | awk '{print tolower($0)}')
 
 if [ "$RNA_SEQ" == true ] ; then
  echo "Running with RNA-Seq parameters."
@@ -152,6 +157,7 @@ echo ""
 # touch ${clone_log}
 mixcr assemble -f \
   --index ${index_file} \
+  -OseparateByC ${SEPERATE_BY_C} \
   -r ${clone_log} \
   -t ${THREADS} \
   ${alignment} ${clone_assembly}

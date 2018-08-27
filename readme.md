@@ -1,3 +1,7 @@
+TODOs:
+* Need to check for the existence of files (especially ap1_report.txt) and quit if they aren't there.
+
+
 This docker executable runs MiXCR with the following versions:
 * mixcr_version=2.1.9
 * imgt_version=201802-5.sv2
@@ -30,21 +34,21 @@ If you are building an image to a previously existing <sometool>:<version> you n
 removing the image before rebuilding it isn't enough.
 srun --pty -c 2 --mem 1g -w c6145-docker-2-0.local -p docker bash
 cd /datastore/alldata/shiny-server/rstudio-common/dbortone/docker/mixcr/mixcr_2.1.9
-docker build -t dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:2 .
-docker push dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:2
+docker build -t dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:4 .
+docker push dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:4
 exit
 srun --pty -c 2 --mem 1g -w fc830-docker-2-0.local -p docker bash
-docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:2
+docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:4
 exit
 srun --pty -c 2 --mem 1g -w r820-docker-2-0.local -p docker bash
-docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:2
+docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:4
 
 [dbortone@login2 ~]$ sinfo -p docker
 PARTITION AVAIL  TIMELIMIT  NODES  STATE NODELIST
 docker       up   infinite      4   idle c6145-docker-2-0.local,fc830-docker-2-0.local,r820-docker-2-0.local,r820-docker-2-1.local
-`srun --pty -c 1 --mem 1g -w r820-docker-2-0.local -p docker bash -c "docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:2"
-srun --pty -c 1 --mem 1g -w r820-docker-2-1.local -p docker bash -c "docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:2"
-srun --pty -c 1 --mem 1g -w fc830-docker-2-0.local -p docker bash -c "docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:2"`
+`srun --pty -c 1 --mem 1g -w r820-docker-2-0.local -p docker bash -c "docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:4"
+srun --pty -c 1 --mem 1g -w r820-docker-2-1.local -p docker bash -c "docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:4"
+srun --pty -c 1 --mem 1g -w fc830-docker-2-0.local -p docker bash -c "docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:4"`
 
 docker variables are:
 bash -c 'source /import/run_mixcr.sh \
@@ -85,7 +89,7 @@ docker run --rm=true \
   mixcr_2.1.9:1
 
 # for interactive session
-srun --pty -c 1 --mem 1g -p docker -w c6145-docker-2-0.local docker run -v /datastore:/datastore:shared  -it dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:2 bash
+srun --pty -c 1 --mem 1g -p docker -w c6145-docker-2-0.local docker run -v /datastore:/datastore:shared  -it dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:4 bash
 
 # pull image to all nodes
 `srun --pty -c 1 --mem 1g -w r820-docker-2-0.local -p docker bash -c "docker pull dockerreg.bioinf.unc.edu:5000/tcrer_1:1"

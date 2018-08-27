@@ -1,4 +1,4 @@
-# mixcr_2.1.9:2
+# mixcr_2.1.9:3
 #   gets the aligned reads using exportReads
 #   installs vdjtools
 
@@ -100,11 +100,13 @@ ENV SAMPLE_NAME "no_sample_name_specified"
 ENV IMPORT_DIR "/import"
 
 #  DEBUG_MODE:true  will pull the sh script from the cluster version of the code rather than the locally stored one.
-#    This allows changes to be made and have them go into effect instantly, wihtout needing to rebuild the docker image
+#    This allows changes to be made and have them go into effect instantly, without needing to rebuild the docker image
 #    and push/pull the changes.  When done with debugging the changes should be push/pulled to all the nodes so the changes.
 #    go into effect and are kept in the image rather than locally.
 ENV DEBUG_MODE false
 
+# SEPERATE_BY_C true will seperate clones by their isotype.  default is set to false.
+ENV SEPERATE_BY_C false
 
 CMD \
   if [ ${DEBUG_MODE} = "true" ] ; \
@@ -124,5 +126,6 @@ CMD \
     --r1_path ${INPUT_PATH_1} \
     --r2_path ${INPUT_PATH_2} \
     --output_dir ${OUTPUT_DIR} \
-    --sample_name ${SAMPLE_NAME}"
+    --sample_name ${SAMPLE_NAME} \
+    --seperate_by_c ${SEPERATE_BY_C}"
  
