@@ -157,7 +157,7 @@ echo ""
 # touch ${clone_log}
 mixcr assemble -f \
   --index ${index_file} \
-  -OseparateByC ${SEPERATE_BY_C} \
+  -OseparateByC=${SEPERATE_BY_C} \
   -r ${clone_log} \
   -t ${THREADS} \
   ${alignment} ${clone_assembly}
