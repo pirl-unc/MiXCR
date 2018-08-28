@@ -105,8 +105,8 @@ ENV IMPORT_DIR "/import"
 #    go into effect and are kept in the image rather than locally.
 ENV DEBUG_MODE false
 
-# SEPERATE_BY_C true will seperate clones by their isotype.  default is set to false.
-ENV SEPERATE_BY_C false
+# SEPARATE_BY_C true will seperate clones by their isotype.  default is set to false.
+ENV SEPARATE_BY_C false
 
 CMD \
   if [ ${DEBUG_MODE} = "true" ] ; \
@@ -127,5 +127,5 @@ CMD \
     --r2_path ${INPUT_PATH_2} \
     --output_dir ${OUTPUT_DIR} \
     --sample_name ${SAMPLE_NAME} \
-    --seperate_by_c ${SEPERATE_BY_C}"
+    --separate_by_c ${SEPARATE_BY_C}"
  

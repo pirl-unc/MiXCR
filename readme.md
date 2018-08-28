@@ -1,6 +1,6 @@
 TODOs:
 * Check for the existence of files (especially ap1_report.txt) and stop analysis if they aren't there.
-* My output file needs to have c regions if SEPERATE_BY_C is true. at present it's only in _clones_default_output.txt
+* My output file needs to have c regions if SEPARATE_BY_C is true. at present it's only in _clones_default_output.txt
 
 This docker executable runs MiXCR with the following versions:
 * mixcr_version=2.1.9
@@ -23,7 +23,7 @@ Target immunological chain list separated by “,”. Available values: IGH, IGL
 * OUTPUT_DIR - path to folder where output should be stored. this needs to exist prior to running
 * SAMPLE_NAME - name of sample.  This should be unique.
 * DEBUG_MODE - true  will pull the sh script from the cluster version of the code rather than the locally stored one. This allows changes to be made and have them go into effect instantly, without needing to rebuild the docker image and push/pull the changes.  When done with debugging the changes should be push/pulled to all the nodes so the changes go into effect and are kept in the image rather than locally.
-* SEPERATE_BY_C - will seperate clones by their isotype.  default is set to false.
+* SEPARATE_BY_C - will seperate clones by their isotype.  default is set to false.
 
 Steps to build an image and run it on slurm
 
