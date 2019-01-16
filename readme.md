@@ -51,6 +51,7 @@ docker       up   infinite      4   idle c6145-docker-2-0.local,fc830-docker-2-0
 srun --pty -c 1 --mem 1g -w r820-docker-2-1.local -p docker bash -c "docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:4"
 srun --pty -c 1 --mem 1g -w fc830-docker-2-0.local -p docker bash -c "docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:4"`
 
+``` bash
 docker variables are:
 bash -c 'source /import/run_mixcr.sh \
  --chains "${CHAINS}" \
@@ -62,6 +63,7 @@ bash -c 'source /import/run_mixcr.sh \
  --r2_path "${INPUT_PATH_2}" \
  --output_dir "${OUTPUT_DIR}" \
  --sample_name "${SAMPLE_NAME}"'
+```
 
 # run on bioinf
 mkdir -p /datastore/nextgenout2/share/labs/imgf/datasets/Sharpless_IP61/mixcr/AE001-1T-SH-TCR_CGTACTAG-TAGATCGC_S3_L001/
