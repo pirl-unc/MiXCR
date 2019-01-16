@@ -60,8 +60,8 @@ srun --pty -c 1 --mem 1g -w r820-docker-2-1.local -p docker bash -c "docker pull
 srun --pty -c 1 --mem 1g -w fc830-docker-2-0.local -p docker bash -c "docker pull dockerreg.bioinf.unc.edu:5000/mixcr_2.1.9:4"
 ```
 
-``` bash
 docker variables are:
+``` bash
 bash -c 'source /import/run_mixcr.sh \
  --chains "${CHAINS}" \
  --rna_seq "${RNA_SEQ}" \
