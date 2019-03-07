@@ -99,7 +99,8 @@ echo "Checking if VDJCA file exists..."
   echo ""
 fi
 
-
+mixcr_start_time=$(date +%s)
+mixcr_align_start_time=$(date +%s)
 if [ "$run_align" == true ] ; then
   echo ""
   echo ""
@@ -124,6 +125,7 @@ if [ "$run_align" == true ] ; then
   echo "Finished export."
   echo ""
 fi
+mixcr_align_time=$(($(date +%s) - mixcr_align_start_time))
 
 
 if [ "$RNA_SEQ" == true ] ; then
@@ -132,18 +134,24 @@ if [ "$RNA_SEQ" == true ] ; then
   echo ""
   echo "Running RNA-Seq specific step assemblePartial 1..."
   echo ""
+  mixcr_pa1_start_time=$(date +%s)
   mixcr assemblePartial -r ap1_report.txt -f ${alignment} alignments_rescued_1.vdjca
+  mixcr_pa1_time=$(($(date +%s) - mixcr_pa1_start_time))
   echo "Finished RNA-Seq specific step assemblePartial 1."
   echo ""
   echo ""
   echo "Running RNA-Seq specific step assemblePartial 2..."
   echo ""
+  mixcr_pa2_start_time=$(date +%s)
   mixcr assemblePartial -r ap2_report.txt -f alignments_rescued_1.vdjca alignments_rescued_2.vdjca
-    echo "Finished RNA-Seq specific step assemblePartial 2."
+  mixcr_pa2_time=$(($(date +%s) - mixcr_pa2_start_time))
+  echo "Finished RNA-Seq specific step assemblePartial 2."
   echo ""
   echo "Running RNA-Seq specific step extendAlignments..."
   echo ""
+  mixcr_extension_start_time=$(date +%s)
   mixcr extendAlignments -r extension_report.txt -f alignments_rescued_2.vdjca "$extended_alignment"
+  mixcr_extension_time=$(($(date +%s) - mixcr_extension_start_time))
   echo "Finished RNA-Seq specific step extendAlignments."
 
   alignment="$extended_alignment"
@@ -155,27 +163,32 @@ echo ""
 echo "Running MiXCR assemble..."
 echo ""
 # touch ${clone_log}
+mixcr_assemble_start_time=$(date +%s)
 mixcr assemble -f \
   --index ${index_file} \
   -OseparateByC=${SEPARATE_BY_C} \
   -r ${clone_log} \
   -t ${THREADS} \
   ${alignment} ${clone_assembly}
+mixcr_assemble_time=$(($(date +%s) - mixcr_assemble_start_time))
 echo "Finished MiXCR assemble."
 echo ""
 echo ""
 echo "Running MiXCR exportAlignments..."
 echo ""
+mixcr_align_export_start_time=$(date +%s)
 mixcr exportAlignments -f \
   -cloneIdWithMappingType ${index_file} \
   -readId -sequence -quality -targets  -aaFeature CDR3\
   ${alignment} \
   ${alignment_txt}
+mixcr_align_export_time=$(($(date +%s) - mixcr_align_export_start_time))
 echo "Finshed MiXCR exportAlignments."
 echo ""
 echo ""
 echo "Running MiXCR exportClones..."
 echo ""
+mixcr_clone_export_start_time=$(date +%s)
 mixcr exportClones -f -chains \
   --filter-out-of-frames \
   --filter-stops \
@@ -186,6 +199,7 @@ mixcr exportClones -f -chains \
   -vHitsWithScore -dHitsWithScore -jHitsWithScore \
   ${clone_assembly} \
   ${clone_txt}
+mixcr_clone_export_time=$(($(date +%s) - mixcr_align_export_start_time))
 echo "Finshed MiXCR exportClones."
 
 echo ""
@@ -199,6 +213,9 @@ align_stats=$(sed '2q;d' align_stats.csv)
 Rscript ${IMPORT_DIR}/rscripts/extract_mixcr_clone_assembly_stats.R ${clone_log} clone_stats.csv
 clone_columns=$(head -n 1 clone_stats.csv)
 clone_stats=$(sed '2q;d' clone_stats.csv)
+
+mixcr_total_time=$(($(date +%s) - mixcr_start_time))
+
 
 if [ "$RNA_SEQ" == true ] ; then
   # grab partial align and extension log output
@@ -218,13 +235,13 @@ if [ "$RNA_SEQ" == true ] ; then
   extension_columns=$(head -n 1 extension_stats.csv)
   extension_stats=$(sed '2q;d' extension_stats.csv)
 
-  mixcr_columns="Sample_ID,${clone_columns},${align_columns},${ap1_columns},${ap2_columns},${extension_columns}"
-  mixcr_qc="${SAMPLE_NAME},${clone_stats},${align_stats},${ap1_stats},${ap2_stats},${extension_stats}"
+  mixcr_columns="Sample_ID,CPU,Align_Time,PA1_Time,PA2_Time,Extension_Time,Assemble_Time,Align_Export_Time,Clone_Export_Time,Total_Time,${clone_columns},${align_columns},${ap1_columns},${ap2_columns},${extension_columns}"
+  mixcr_qc="${SAMPLE_NAME},${THREADS},${mixcr_align_time},${mixcr_pa1_time},${mixcr_pa2_time},${mixcr_extension_time},${mixcr_assemble_time},${mixcr_align_export_time},${mixcr_clone_export_time},${mixcr_total_time},${clone_stats},${align_stats},${ap1_stats},${ap2_stats},${extension_stats}"
 
 else
 
-  mixcr_columns="Sample_ID,${clone_columns},${align_columns}"
-  mixcr_qc="${SAMPLE_NAME},${clone_stats},${align_stats}"
+  mixcr_columns="Sample_ID,CPU,Align_Time,Assemble_Time,Align_Export_Time,Clone_Export_Time,Total_Time,${clone_columns},${align_columns}"
+  mixcr_qc="${SAMPLE_NAME},${THREADS},${mixcr_align_time},${mixcr_assemble_time},${mixcr_align_export_time},${mixcr_clone_export_time},${mixcr_total_time},${clone_stats},${align_stats}"
 
 fi
 

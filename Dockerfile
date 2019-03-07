@@ -4,6 +4,8 @@
 
 FROM phusion/baseimage:0.9.19
 
+# if these were ENV you could access them though the script 
+#   and output what version were run
 ARG mixcr_version=2.1.9
 ARG imgt_version=201802-5.sv2
 ARG fastqc_version=0.11.7
@@ -117,15 +119,15 @@ CMD \
     echo "Debug mode is off."; \
   fi && \
   bash -c "source ${IMPORT_DIR}/run_mixcr.sh \
-    --import_dir ${IMPORT_DIR} \
-    --chains ${CHAINS} \
-    --rna_seq ${RNA_SEQ} \
-    --use_existing_vdjca ${USE_EXISTING_VDJCA} \
-    --species ${SPECIES} \
-    --threads ${THREADS} \
-    --r1_path ${INPUT_PATH_1} \
-    --r2_path ${INPUT_PATH_2} \
-    --output_dir ${OUTPUT_DIR} \
-    --sample_name ${SAMPLE_NAME} \
-    --separate_by_c ${SEPARATE_BY_C}"
+    --import_dir=${IMPORT_DIR} \
+    --chains=${CHAINS} \
+    --rna_seq=${RNA_SEQ} \
+    --use_existing_vdjca=${USE_EXISTING_VDJCA} \
+    --species=${SPECIES} \
+    --threads=${THREADS} \
+    --r1_path=${INPUT_PATH_1} \
+    --r2_path=${INPUT_PATH_2} \
+    --output_dir=${OUTPUT_DIR} \
+    --sample_name=${SAMPLE_NAME} \
+    --separate_by_c=${SEPARATE_BY_C}"
  
