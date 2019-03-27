@@ -3,6 +3,7 @@
 # TODO's:
 # should be outputting the default clone export so that vdjtools works on the output
 # this would require some rewritting of the script to get the clone diversity stats
+set -e
 
 echo "Running run_mixcr.sh script..."
 echo ""
@@ -127,6 +128,8 @@ if [ "$run_align" == true ] ; then
 fi
 mixcr_align_time=$(($(date +%s) - mixcr_align_start_time))
 
+# error from here on out will likely be due to no clones for which we would still like output
+set +e
 
 if [ "$RNA_SEQ" == true ] ; then
   extended_alignment="${file_prefix}extended_alignment.vdjca"

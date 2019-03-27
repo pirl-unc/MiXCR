@@ -1,4 +1,4 @@
-# mixcr_2.1.9:3
+# mixcr_2.1.9:6
 #   gets the aligned reads using exportReads
 #   installs vdjtools
 
