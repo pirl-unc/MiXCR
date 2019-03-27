@@ -15,7 +15,6 @@ while [ $# -gt 0 ]; do
       ;;
     --chains=*)
       CHAINS="${1#*=}"
-      echo "chains say hi"
       ;;
     --rna_seq=*)
       RNA_SEQ="${1#*=}"
