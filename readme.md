@@ -9,7 +9,7 @@ from the Mi Lab version.
 
 
 ## Tagging
-v.w.x.y
+v.w.x.y  
 vwx is the version of MiXCR.  
 y is the version of this Dockerfile.  
 ```bash  
