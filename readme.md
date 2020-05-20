@@ -9,9 +9,9 @@ from the Mi Lab version.
 
 
 ## Tagging
-v.w.x
+v.w.x.y
 vwx is the version of MiXCR.  
-w is the version of this Dockerfile.  
+y is the version of this Dockerfile.  
 ```bash  
 git tag -a 3.0.13.0 -m "Basically Mi Lab image with a working imgt library file."; git push -u origin --tags  
 ```
