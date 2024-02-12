@@ -1,3 +1,5 @@
+* this repository was initially hosted at github.com/Benjamin-Vincent-Lab/MiXCR , moved here on 2/12/2024
+
 # benjaminvincentlab/mixcr
 
 The milaboratory/mixcr:3.0.13-imgt image wasn't working.  There was a problem with the imgt file not 
